@@ -79,8 +79,8 @@ SILENCED_WARNINGS=""
 # NOTE: Google Protobuf does not currently build if you specify 'libstdc++'
 # instead of `libc++` here.
 STDLIB=libc++
-# -fembed-bitcode
-CFLAGS="${CLANG_VERBOSE} ${SILENCED_WARNINGS} -DNDEBUG -Os -pipe -fPIC -fcxx-exceptions"
+
+CFLAGS="${CLANG_VERBOSE} ${SILENCED_WARNINGS} -DNDEBUG -Os -pipe -fPIC -fcxx-exceptions  -fembed-bitcode -fembed-bitcode-marker" 
 CFLAGS_OSX="${CLANG_VERBOSE} ${SILENCED_WARNINGS} -DNDEBUG -Os -pipe -fPIC -fcxx-exceptions"
 CXXFLAGS="${CLANG_VERBOSE} ${CFLAGS} -std=c++11 -stdlib=${STDLIB}"
 CXXFLAGS_OSX="${CLANG_VERBOSE} ${CFLAGS_OSX} -std=c++11 -stdlib=${STDLIB}"
@@ -260,7 +260,7 @@ then
         mkdir "${PREFIX}/platform/i386-sim/"
         ./configure --build=x86_64-apple-${DARWIN} --host=i386-apple-${DARWIN} --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/i386-sim "CC=${CC}" "CFLAGS=${CFLAGS_OSX} -mios-simulator-version-min=${MIN_SDK_VERSION} -arch i386 -isysroot ${IPHONESIMULATOR_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS_OSX} -mios-simulator-version-min=${MIN_SDK_VERSION} -arch i386 -isysroot ${IPHONESIMULATOR_SYSROOT}" LDFLAGS="-arch i386 -mios-simulator-version-min=${MIN_SDK_VERSION} ${LDFLAGS} -L${IPHONESIMULATOR_SYSROOT}/usr/lib/" "LIBS=${LIBS}"
         cp "config.log" "${PREFIX}/platform/i386-sim/"
-        make
+        make -j 16
         make install
         unset MACOSX_DEPLOYMENT_TARGET
         unset IPHONEOS_DEPLOYMENT_TARGET
@@ -283,7 +283,7 @@ then
         mkdir "${PREFIX}/platform/x86_64-sim/"
         ./configure --build=x86_64-apple-${DARWIN} --host=x86_64 --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/x86_64-sim "CC=${CC}" "CFLAGS=${CFLAGS_OSX} -mios-simulator-version-min=${MIN_SDK_VERSION} -arch x86_64 -isysroot ${IPHONESIMULATOR_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS_OSX} -mios-simulator-version-min=${MIN_SDK_VERSION} -arch x86_64 -isysroot ${IPHONESIMULATOR_SYSROOT}" LDFLAGS="-arch x86_64 -mios-simulator-version-min=${MIN_SDK_VERSION} ${LDFLAGS} -L${IPHONESIMULATOR_SYSROOT}/usr/lib/" "LIBS=${LIBS}"
         cp "config.log" "${PREFIX}/platform/x86_64-sim/"        
-        make
+        make -j 16
         make install
         unset MACOSX_DEPLOYMENT_TARGET
         unset IPHONEOS_DEPLOYMENT_TARGET
@@ -304,7 +304,7 @@ then
         make distclean
         mkdir "${PREFIX}/platform/armv7-ios/"
         ./configure --build=x86_64-apple-${DARWIN} --host=armv7-apple-${DARWIN} --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/armv7-ios "CC=${CC}" "CFLAGS=${CFLAGS} -miphoneos-version-min=${MIN_SDK_VERSION} -arch armv7 -isysroot ${IPHONEOS_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS} -arch armv7 -isysroot ${IPHONEOS_SYSROOT}" LDFLAGS="-arch armv7 -miphoneos-version-min=${MIN_SDK_VERSION} ${LDFLAGS}" "LIBS=${LIBS}"
-        make
+        make -j 16
         make install
         unset IPHONEOS_DEPLOYMENT_TARGET
         cp "config.log" "${PREFIX}/platform/armv7-ios/"
@@ -325,7 +325,7 @@ then
         make distclean
         mkdir "${PREFIX}/platform/armv7s-ios/"
         ./configure --build=x86_64-apple-${DARWIN} --host=armv7s-apple-${DARWIN} --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/armv7s-ios "CC=${CC}" "CFLAGS=${CFLAGS} -miphoneos-version-min=${MIN_SDK_VERSION} -arch armv7s -isysroot ${IPHONEOS_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS} -arch armv7s -isysroot ${IPHONEOS_SYSROOT}" LDFLAGS="-arch armv7s -miphoneos-version-min=${MIN_SDK_VERSION} ${LDFLAGS}" "LIBS=${LIBS}"
-        make
+        make -j 16
         make install
         unset IPHONEOS_DEPLOYMENT_TARGET
         cp "config.log" "${PREFIX}/platform/armv7s-ios/"
@@ -346,10 +346,10 @@ then
         make distclean
         mkdir "${PREFIX}/platform/arm64-ios/"
         ./configure --build=x86_64-apple-${DARWIN} --host=arm --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/arm64-ios "CC=${CC}" "CFLAGS=${CFLAGS} -miphoneos-version-min=${MIN_SDK_VERSION} -arch arm64 -isysroot ${IPHONEOS_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS} -arch arm64 -isysroot ${IPHONEOS_SYSROOT}" LDFLAGS="-arch arm64 -miphoneos-version-min=${MIN_SDK_VERSION} ${LDFLAGS}" "LIBS=${LIBS}"
-        make
-        make install
-        unset IPHONEOS_DEPLOYMENT_TARGET
         cp "config.log" "${PREFIX}/platform/arm64-ios/"
+        make -j 16
+        make install
+        unset IPHONEOS_DEPLOYMENT_TARGET        
     )
 fi
 
@@ -366,11 +366,11 @@ then
         cd ${PROTOBUF_SRC_DIR}
         make distclean
         mkdir "${PREFIX}/platform/armv7k-watchos/"
-        ./configure --build=x86_64-apple-${DARWIN} --host=armv7k-apple-${DARWIN} --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/armv7k-watchos "CC=${CC}" "CFLAGS=${CFLAGS} -mwatchos-version-min=${MIN_WATCHOS_VERSION} -arch armv7k -isysroot ${WATCHOS_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS} -arch armv7k -isysroot ${WATCHOS_SYSROOT}" LDFLAGS="-arch armv7k -mwatchos-version-min=${MIN_WATCHOS_VERSION} ${LDFLAGS}" "LIBS=${LIBS}"
-        make
-        make install
-        unset WATCHOS_DEPLOYMENT_TARGET
+        ./configure --build=x86_64-apple-${DARWIN} --host=arm --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/armv7k-watchos "CC=${CC}" "CFLAGS=${CFLAGS} -mwatchos-version-min=${MIN_WATCHOS_VERSION} -arch armv7k -isysroot ${WATCHOS_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS} -arch armv7k -isysroot ${WATCHOS_SYSROOT}" LDFLAGS="-arch armv7k -mwatchos-version-min=${MIN_WATCHOS_VERSION} ${LDFLAGS}" "LIBS=${LIBS}"
         cp "config.log" "${PREFIX}/platform/armv7k-watchos/"
+        make -j 16
+        make install
+        unset WATCHOS_DEPLOYMENT_TARGET        
     )
 fi
 
@@ -389,7 +389,7 @@ then
         mkdir "${PREFIX}/platform/watchos-sim/"
         ./configure --build=x86_64-apple-${DARWIN} --host=i386-apple-${DARWIN} --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/watchos-sim "CC=${CC}" "CFLAGS=${CFLAGS} -mwatchos-simulator-version-min=${MIN_WATCHOS_VERSION} -arch i386 -isysroot ${WATCHSIMULATOR_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS_OSX} -arch i386 -isysroot ${WATCHSIMULATOR_SYSROOT}" LDFLAGS="-arch i386 -mwatchos-simulator-version-min=${MIN_WATCHOS_VERSION} ${LDFLAGS} -L${WATCHSIMULATOR_SYSROOT}/usr/lib/" "LIBS=${LIBS}"
         cp "config.log" "${PREFIX}/platform/watchos-sim/"
-        make
+        make -j 16
         make install
         unset WATCHOS_DEPLOYMENT_TARGET        
     )
