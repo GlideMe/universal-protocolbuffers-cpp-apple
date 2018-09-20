@@ -17,25 +17,28 @@ fi
 mkdir -p "${PREFIX}/platform"
 
 # A "YES" value will build the latest code from GitHub on the master branch.
-# A "NO" value will use the 2.6.0 tarball downloaded from googlecode.com.
+# A "NO" value will use the 3.6.1 tarball downloaded from googlecode.com.
 USE_GIT_MASTER=NO
 
 
 
 PROTOBUF_GIT_URL=https://github.com/google/protobuf.git
 PROTOBUF_GIT_DIRNAME=protobuf
-PROTOBUF_VERSION=3.0.0-beta-2
-PROTOBUF_RELEASE_URL=https://github.com/google/protobuf/releases/download/v3.0.0-beta-2/protobuf-cpp-3.0.0-beta-2.tar.gz
+PROTOBUF_VERSION=3.6.1
+PROTOBUF_RELEASE_URL=https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOBUF_VERSION}/protobuf-all-${PROTOBUF_VERSION}.tar.gz
 PROTOBUF_RELEASE_DIRNAME=protobuf-${PROTOBUF_VERSION}
 
-BUILD_MACOSX_X86_64=YES
+BUILD_MACOSX_X86_64=NO
 
 BUILD_I386_IOSSIM=NO
 BUILD_X86_64_IOSSIM=NO
 
 BUILD_IOS_ARMV7=NO
 BUILD_IOS_ARMV7S=NO
-BUILD_IOS_ARM64=YES
+BUILD_IOS_ARM64=NO
+
+BUILD_WATCHOS=YES
+BUILD_WATCHSIMULATOR=YES
 
 PROTOBUF_SRC_DIR=./temp
 
@@ -43,16 +46,24 @@ DARWIN=darwin`uname -r`
 
 XCODEDIR=`xcode-select --print-path`
 IOS_SDK_VERSION=`xcrun --sdk iphoneos --show-sdk-version`
-MIN_SDK_VERSION=6.0
+MIN_SDK_VERSION=8.0
 
 MACOSX_PLATFORM=${XCODEDIR}/Platforms/MacOSX.platform
-MACOSX_SYSROOT=${MACOSX_PLATFORM}/Developer/SDKs/MacOSX10.10.sdk
+MACOSX_SYSROOT=${MACOSX_PLATFORM}/Developer/SDKs/MacOSX.sdk
 
 IPHONEOS_PLATFORM=`xcrun --sdk iphoneos --show-sdk-platform-path`
 IPHONEOS_SYSROOT=`xcrun --sdk iphoneos --show-sdk-path`
 
 IPHONESIMULATOR_PLATFORM=`xcrun --sdk iphonesimulator --show-sdk-platform-path`
 IPHONESIMULATOR_SYSROOT=`xcrun --sdk iphonesimulator --show-sdk-path`
+
+WATCHOS_PLATFORM=`xcrun --sdk watchos --show-sdk-platform-path`
+WATCHOS_SYSROOT=`xcrun --sdk watchos --show-sdk-path`
+MIN_WATCHOS_VERSION=4.0
+
+WATCHSIMULATOR_PLATFORM=`xcrun --sdk watchsimulator --show-sdk-platform-path`
+WATCHSIMULATOR_SYSROOT=`xcrun --sdk watchsimulator --show-sdk-path`
+
 
 # Uncomment if you want to see more information about each invocation
 # of clang as the builds proceed.
@@ -80,17 +91,24 @@ echo "BUILD_X86_64_IOSSIM ........ ${BUILD_X86_64_IOSSIM}"
 echo "BUILD_IOS_ARMV7 ............ ${BUILD_IOS_ARMV7}"
 echo "BUILD_IOS_ARMV7S ........... ${BUILD_IOS_ARMV7S}"
 echo "BUILD_IOS_ARM64 ............ ${BUILD_IOS_ARM64}"
+echo "BUILD_WATCHOS .............. ${BUILD_WATCHOS}"
+echo "BUILD_WATCHSIMULATOR ....... ${BUILD_WATCHSIMULATOR}"
 echo "PROTOBUF_SRC_DIR ........... ${PROTOBUF_SRC_DIR}"
 echo "DARWIN ..................... ${DARWIN}"
 echo "XCODEDIR ................... ${XCODEDIR}"
 echo "IOS_SDK_VERSION ............ ${IOS_SDK_VERSION}"
 echo "MIN_SDK_VERSION ............ ${MIN_SDK_VERSION}"
+echo "MIN_WATCHOS_VERSION ........ ${MIN_WATCHOS_VERSION}"
 echo "MACOSX_PLATFORM ............ ${MACOSX_PLATFORM}"
 echo "MACOSX_SYSROOT ............. ${MACOSX_SYSROOT}"
 echo "IPHONEOS_PLATFORM .......... ${IPHONEOS_PLATFORM}"
 echo "IPHONEOS_SYSROOT ........... ${IPHONEOS_SYSROOT}"
 echo "IPHONESIMULATOR_PLATFORM ... ${IPHONESIMULATOR_PLATFORM}"
 echo "IPHONESIMULATOR_SYSROOT .... ${IPHONESIMULATOR_SYSROOT}"
+echo "WATCHOS_PLATFORM ........... ${WATCHOS_PLATFORM}"
+echo "WATCHOS_SYSROOT ............ ${WATCHOS_SYSROOT}"
+echo "WATCHSIMULATOR_PLATFORM .... ${WATCHSIMULATOR_PLATFORM}"
+echo "WATCHSIMULATOR_SYSROOT ..... ${WATCHSIMULATOR_SYSROOT}"
 echo "CC ......................... ${CC}"
 echo "CFLAGS ..................... ${CFLAGS}"
 echo "CXX ........................ ${CXX}"
@@ -129,24 +147,23 @@ echo "$(tput sgr0)"
         then
             rm -rf "${PROTOBUF_RELEASE_DIRNAME}"
         fi
-        curl --location ${PROTOBUF_RELEASE_URL} --output ${PROTOBUF_RELEASE_DIRNAME}.tar.gz
+        
+        if [ -f ${PROTOBUF_RELEASE_DIRNAME}.tar.gz ]
+        then
+        	echo "File ${PROTOBUF_RELEASE_DIRNAME}.tar.gz already exist, no need to re-download"
+        else
+        	echo "File ${PROTOBUF_RELEASE_DIRNAME}.tar.gz does not exist, will download"
+         	curl --location ${PROTOBUF_RELEASE_URL} --output ${PROTOBUF_RELEASE_DIRNAME}.tar.gz        	
+        fi
+        
         tar xvf ${PROTOBUF_RELEASE_DIRNAME}.tar.gz
         mv "${PROTOBUF_RELEASE_DIRNAME}" "${PROTOBUF_SRC_DIR}"
-        rm ${PROTOBUF_RELEASE_DIRNAME}.tar.gz
-
-        # Remove the version of Google Test included with the release.
-        # We will replace it with version 1.7.0 in a later step.
-        if [ -d "${PROTOBUF_SRC_DIR}/gtest" ]
-        then
-            rm -r "${PROTOBUF_SRC_DIR}/gtest"
-        fi
     fi
 )
 
 echo "$(tput setaf 2)"
 echo "###################################################################"
-echo "# Fetch Google Test & Prepare the Configure Script"
-echo "#   (note: This section is lifted from autogen.sh)"
+echo "# Prepare the Configure Script"
 echo "###################################################################"
 echo "$(tput sgr0)"
 
@@ -161,19 +178,6 @@ Could not find source code.  Make sure you are running this script from the
 root of the distribution tree.
 __EOF__
         exit 1
-    fi
-
-    # Check that gtest is present. Older versions of protobuf were stored in SVN
-    # and the gtest directory was setup as an SVN external.  Now, protobuf is
-    # stored in GitHub and the gtest directory is not included. The commands
-    # below will grab the latest version of gtest. Currently that is 1.7.0.
-    if test ! -e gtest
-    then
-        echo "Google Test not present.  Fetching gtest-1.7.0 from the web..."
-        curl --location http://googletest.googlecode.com/files/gtest-1.7.0.zip --output gtest-1.7.0.zip
-        unzip gtest-1.7.0.zip
-        rm gtest-1.7.0.zip
-        mv gtest-1.7.0 gtest
     fi
 
     autoreconf -f -i -Wall,no-obsolete
@@ -292,6 +296,40 @@ then
         cd ${PROTOBUF_SRC_DIR}
         make distclean
         ./configure --build=x86_64-apple-${DARWIN} --host=arm --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/arm64-ios "CC=${CC}" "CFLAGS=${CFLAGS} -miphoneos-version-min=${MIN_SDK_VERSION} -arch arm64 -isysroot ${IPHONEOS_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS} -arch arm64 -isysroot ${IPHONEOS_SYSROOT}" LDFLAGS="-arch arm64 -miphoneos-version-min=${MIN_SDK_VERSION} ${LDFLAGS}" "LIBS=${LIBS}"
+        make
+        make install
+    )
+fi
+
+echo "$(tput setaf 2)"
+echo "###################"
+echo "# arm7k for WatchOS"
+echo "###################"
+echo "$(tput sgr0)"
+
+if [ "${BUILD_WATCHOS}" == "YES" ]
+then
+    (
+        cd ${PROTOBUF_SRC_DIR}
+        make distclean
+        ./configure --build=x86_64-apple-${DARWIN} --host=arm --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/armv7k-watchos "CC=${CC}" "CFLAGS=${CFLAGS} -mwatchos-version-min=${MIN_WATCHOS_VERSION} -arch armv7k -isysroot ${WATCHOS_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS} -arch armv7k -isysroot ${WATCHOS_SYSROOT}" LDFLAGS="-arch armv7k -mwatchos-version-min=${MIN_WATCHOS_VERSION} ${LDFLAGS}" "LIBS=${LIBS}"
+        make
+        make install
+    )
+fi
+
+echo "$(tput setaf 2)"
+echo "###########################"
+echo "# i386 for Watch Simulator"
+echo "###########################"
+echo "$(tput sgr0)"
+
+if [ "${BUILD_WATCHSIMULATOR}" == "YES" ]
+then
+    (
+        cd ${PROTOBUF_SRC_DIR}
+        make distclean
+        ./configure --build=x86_64-apple-${DARWIN} --host=i386 --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/watchos-sim "CC=${CC}" "CFLAGS=${CFLAGS} -mwatchos-version-min=${MIN_WATCHOS_VERSION} -arch i386 -isysroot ${WATCHSIMULATOR_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS} -arch i386 -isysroot ${WATCHSIMULATOR_SYSROOT}" LDFLAGS="-arch i386 -mwatchos-version-min=${MIN_WATCHOS_VERSION} ${LDFLAGS}" "LIBS=${LIBS}"
         make
         make install
     )
