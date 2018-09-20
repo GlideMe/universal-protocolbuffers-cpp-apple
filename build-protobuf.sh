@@ -31,14 +31,14 @@ PROTOBUF_RELEASE_TYPE=cpp
 PROTOBUF_RELEASE_URL=https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOBUF_VERSION}/protobuf-${PROTOBUF_RELEASE_TYPE}-${PROTOBUF_VERSION}.tar.gz
 PROTOBUF_RELEASE_DIRNAME=protobuf-${PROTOBUF_VERSION}
 
-BUILD_MACOSX_X86_64=NO
+BUILD_MACOSX_X86_64=YES
 
 BUILD_I386_IOSSIM=NO
-BUILD_X86_64_IOSSIM=NO
+BUILD_X86_64_IOSSIM=YES
 
 BUILD_IOS_ARMV7=NO
 BUILD_IOS_ARMV7S=NO
-BUILD_IOS_ARM64=NO
+BUILD_IOS_ARM64=YES
 
 BUILD_WATCHOS=YES
 BUILD_WATCHSIMULATOR=YES
@@ -71,14 +71,17 @@ WATCHSIMULATOR_SYSROOT=`xcrun --sdk watchsimulator --show-sdk-path`
 # Uncomment if you want to see more information about each invocation
 # of clang as the builds proceed.
 # CLANG_VERBOSE="--verbose"
-
 CC=clang
 CXX=clang
-
-CFLAGS="${CLANG_VERBOSE} -DNDEBUG -g -O0 -pipe -fPIC -fcxx-exceptions"
-CXXFLAGS="${CLANG_VERBOSE} ${CFLAGS} -std=c++11 -stdlib=libc++"
-
-LDFLAGS="-stdlib=libc++"
+SILENCED_WARNINGS="-Wno-unused-local-typedef -Wno-unused-function"
+# NOTE: Google Protobuf does not currently build if you specify 'libstdc++'
+# instead of `libc++` here.
+STDLIB=libc++
+CFLAGS="${CLANG_VERBOSE} ${SILENCED_WARNINGS} -DNDEBUG -Os -pipe -fPIC -fcxx-exceptions -fembed-bitcode"
+CFLAGS_OSX="${CLANG_VERBOSE} ${SILENCED_WARNINGS} -DNDEBUG -Os -pipe -fPIC -fcxx-exceptions"
+CXXFLAGS="${CLANG_VERBOSE} ${CFLAGS} -std=c++11 -stdlib=${STDLIB}"
+CXXFLAGS_OSX="${CLANG_VERBOSE} ${CFLAGS_OSX} -std=c++11 -stdlib=${STDLIB}"
+LDFLAGS="-stdlib=${STDLIB}"
 LIBS="-lc++ -lc++abi"
 
 echo "PREFIX ..................... ${PREFIX}"
@@ -162,6 +165,17 @@ echo "$(tput sgr0)"
         tar xvf ${PROTOBUF_RELEASE_DIRNAME}.tar.gz
         mv "${PROTOBUF_RELEASE_DIRNAME}" "${PROTOBUF_SRC_DIR}"
         patch "${PROTOBUF_SRC_DIR}/src/google/protobuf/compiler/subprocess.cc" "./subprocess.patch"
+        
+        # Fix descriptor.h
+		sed -i '' '/#define GOOGLE_PROTOBUF_DESCRIPTOR_H__/a\
+		#undef TYPE_BOOL
+		' ${PROTOBUF_SRC_DIR}/src/google/protobuf/descriptor.h
+
+		# Remove the version of Google Test included with the release.
+		if [ -d "${PROTOBUF_SRC_DIR}/gtest" ]
+			then
+				rm -r "${PROTOBUF_SRC_DIR}/gtest"
+			fi
     fi
 )
 
@@ -195,6 +209,8 @@ __EOF__
 # susequent iOS builds.
 ###################################################################
 
+export MACOSX_DEPLOYMENT_TARGET="10.12"
+
 echo "$(tput setaf 2)"
 echo "###################################################################"
 echo "# x86_64 for Mac OS X"
@@ -214,6 +230,8 @@ then
 fi
 
 PROTOC=${PREFIX}/platform/x86_64-mac/bin/protoc
+
+unset MACOSX_DEPLOYMENT_TARGET
 
 ###################################################################
 # This section contains the build commands for each of the 
@@ -316,7 +334,7 @@ then
     (
         cd ${PROTOBUF_SRC_DIR}
         make distclean
-        ./configure --build=x86_64-apple-${DARWIN} --host=arm --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/armv7k-watchos "CC=${CC}" "CFLAGS=${CFLAGS} -mwatchos-version-min=${MIN_WATCHOS_VERSION} -arch armv7k -isysroot ${WATCHOS_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS} -arch armv7k -isysroot ${WATCHOS_SYSROOT}" LDFLAGS="-arch armv7k -mwatchos-version-min=${MIN_WATCHOS_VERSION} ${LDFLAGS}" "LIBS=${LIBS}"
+        ./configure --build=x86_64-apple-${DARWIN} --host=armv7k-apple-${DARWIN} --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/armv7k-watchos "CC=${CC}" "CFLAGS=${CFLAGS} -mwatchos-version-min=${MIN_WATCHOS_VERSION} -arch armv7k -isysroot ${WATCHOS_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS} -arch armv7k -isysroot ${WATCHOS_SYSROOT}" LDFLAGS="-arch armv7k -mwatchos-version-min=${MIN_WATCHOS_VERSION} ${LDFLAGS}" "LIBS=${LIBS}"
         make
         make install
     )
@@ -333,51 +351,51 @@ then
     (
         cd ${PROTOBUF_SRC_DIR}
         make distclean
-        ./configure --build=x86_64-apple-${DARWIN} --host=i386 --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/watchos-sim "CC=${CC}" "CFLAGS=${CFLAGS} -mwatchos-version-min=${MIN_WATCHOS_VERSION} -arch i386 -isysroot ${WATCHSIMULATOR_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS} -arch i386 -isysroot ${WATCHSIMULATOR_SYSROOT}" LDFLAGS="-arch i386 -mwatchos-version-min=${MIN_WATCHOS_VERSION} ${LDFLAGS}" "LIBS=${LIBS}"
+        ./configure --build=x86_64-apple-${DARWIN} --host=i386-apple-${DARWIN} --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/watchos-sim "CC=${CC}" "CFLAGS=${CFLAGS} -mwatchos-version-min=${MIN_WATCHOS_VERSION} -arch i386 -isysroot ${WATCHSIMULATOR_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS} -arch i386 -isysroot ${WATCHSIMULATOR_SYSROOT}" LDFLAGS="-arch i386 -mwatchos-version-min=${MIN_WATCHOS_VERSION} ${LDFLAGS}" "LIBS=${LIBS}"
         make
         make install
     )
 fi
 
-# echo "$(tput setaf 2)"
-# echo "###################################################################"
-# echo "# Create Universal Libraries and Finalize the packaging"
-# echo "###################################################################"
-# echo "$(tput sgr0)"
-# 
-# (
-#     cd ${PREFIX}/platform
-#     mkdir universal
-#     lipo x86_64-sim/lib/libprotobuf.a i386-sim/lib/libprotobuf.a arm64-ios/lib/libprotobuf.a armv7s-ios/lib/libprotobuf.a armv7-ios/lib/libprotobuf.a -create -output universal/libprotobuf.a
-#     lipo x86_64-sim/lib/libprotobuf-lite.a i386-sim/lib/libprotobuf-lite.a arm64-ios/lib/libprotobuf-lite.a armv7s-ios/lib/libprotobuf-lite.a armv7-ios/lib/libprotobuf-lite.a -create -output universal/libprotobuf-lite.a
-# )
-# 
-# (
-#     cd ${PREFIX}
-#     mkdir bin
-#     mkdir lib
-#     cp -r platform/x86_64-mac/bin/protoc bin
-#     cp -r platform/x86_64-mac/lib/* lib
-#     cp -r platform/universal/* lib
-#     rm -rf platform
-#     lipo -info lib/libprotobuf.a
-#     lipo -info lib/libprotobuf-lite.a
-# )
-# 
-# if [ "${USE_GIT_MASTER}" == "YES" ]
-# then
-#     if [ -d "${PREFIX}-master" ]
-#     then
-#         rm -rf "${PREFIX}-master"
-#     fi
-#     mv "${PREFIX}" "${PREFIX}-master"
-# else
-#     if [ -d "${PREFIX}-${PROTOBUF_VERSION}" ]
-#     then
-#         rm -rf "${PREFIX}-${PROTOBUF_VERSION}"
-#     fi
-#     mv "${PREFIX}" "${PREFIX}-${PROTOBUF_VERSION}"
-# fi
+echo "$(tput setaf 2)"
+echo "###################################################################"
+echo "# Create Universal Libraries and Finalize the packaging"
+echo "###################################################################"
+echo "$(tput sgr0)"
+(
+cd ${PREFIX}/platform
+mkdir universal
+for i in `ls x86_64-mac/lib/*.a`
+do
+i=`basename $i`
+lipo -create *sim/lib/$i *watchos/lib/$i *ios/lib/$i -output universal/$i
+done
+)
+(
+cd ${PREFIX}
+mkdir bin
+mkdir lib
+cp -r platform/x86_64-mac/bin/protoc bin
+cp -r platform/x86_64-mac/lib/* lib
+cp -r platform/universal/* lib
+#rm -rf platform
+lipo -info lib/libprotobuf.a
+lipo -info lib/libprotobuf-lite.a
+)
+if [ "${USE_GIT_MASTER}" == "YES" ]
+then
+if [ -d "${PREFIX}-master" ]
+then
+rm -rf "${PREFIX}-master"
+fi
+mv "${PREFIX}" "${PREFIX}-master"
+else
+if [ -d "${PREFIX}-${PROTOBUF_VERSION}" ]
+then
+rm -rf "${PREFIX}-${PROTOBUF_VERSION}"
+fi
+mv "${PREFIX}" "${PREFIX}-${PROTOBUF_VERSION}"
+fi
 
 echo Done!
 
