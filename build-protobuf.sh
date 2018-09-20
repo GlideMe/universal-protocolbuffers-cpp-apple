@@ -53,6 +53,7 @@ MIN_SDK_VERSION=8.0
 
 MACOSX_PLATFORM=${XCODEDIR}/Platforms/MacOSX.platform
 MACOSX_SYSROOT=${MACOSX_PLATFORM}/Developer/SDKs/MacOSX.sdk
+MIN_MACOS_VERSION=12.0
 
 IPHONEOS_PLATFORM=`xcrun --sdk iphoneos --show-sdk-platform-path`
 IPHONEOS_SYSROOT=`xcrun --sdk iphoneos --show-sdk-path`
@@ -209,8 +210,6 @@ __EOF__
 # susequent iOS builds.
 ###################################################################
 
-export MACOSX_DEPLOYMENT_TARGET="10.12"
-
 echo "$(tput setaf 2)"
 echo "###################################################################"
 echo "# x86_64 for Mac OS X"
@@ -220,18 +219,19 @@ echo "$(tput sgr0)"
 if [ "${BUILD_MACOSX_X86_64}" == "YES" ]
 then
     (
+	    export MACOSX_DEPLOYMENT_TARGET="${MIN_MACOS_VERSION}"
         cd ${PROTOBUF_SRC_DIR}
         make distclean
         ./configure --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/x86_64-mac "CC=${CC}" "CFLAGS=${CFLAGS} -arch x86_64" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS} -arch x86_64" "LDFLAGS=${LDFLAGS}" "LIBS=${LIBS}"
         make
-        make check
+        #make check
         make install
+        unset MACOSX_DEPLOYMENT_TARGET
     )
 fi
 
 PROTOC=${PREFIX}/platform/x86_64-mac/bin/protoc
 
-unset MACOSX_DEPLOYMENT_TARGET
 
 ###################################################################
 # This section contains the build commands for each of the 
@@ -247,11 +247,13 @@ echo "$(tput sgr0)"
 if [ "${BUILD_I386_IOSSIM}" == "YES" ]
 then
     (
+	    export IPHONEOS_DEPLOYMENT_TARGET="${MIN_SDK_VERSION}"
         cd ${PROTOBUF_SRC_DIR}
         make distclean
-        ./configure --build=x86_64-apple-${DARWIN} --host=i386-apple-${DARWIN} --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/i386-sim "CC=${CC}" "CFLAGS=${CFLAGS} -miphoneos-version-min=${MIN_SDK_VERSION} -arch i386 -isysroot ${IPHONESIMULATOR_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS} -arch i386 -isysroot ${IPHONESIMULATOR_SYSROOT}" LDFLAGS="-arch i386 -miphoneos-version-min=${MIN_SDK_VERSION} ${LDFLAGS}" "LIBS=${LIBS}"
+        ./configure --build=x86_64-apple-${DARWIN} --host=i386-apple-${DARWIN} --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/i386-sim "CC=${CC}" "CFLAGS=${CFLAGS} -mios-simulator-version-min=${MIN_SDK_VERSION} -arch i386 -isysroot ${IPHONESIMULATOR_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS} -arch i386 -isysroot ${IPHONESIMULATOR_SYSROOT}" LDFLAGS="-arch i386 -mios-simulator-version-min=${MIN_SDK_VERSION} ${LDFLAGS}" "LIBS=${LIBS}"
         make
         make install
+        unset IPHONEOS_DEPLOYMENT_TARGET
     )
 fi
 
@@ -264,11 +266,13 @@ echo "$(tput sgr0)"
 if [ "${BUILD_X86_64_IOSSIM}" == "YES" ]
 then
     (
+	    export IPHONEOS_DEPLOYMENT_TARGET="${MIN_SDK_VERSION}"
         cd ${PROTOBUF_SRC_DIR}
         make distclean
-        ./configure --build=x86_64-apple-${DARWIN} --host=x86_64-apple-${DARWIN} --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/x86_64-sim "CC=${CC}" "CFLAGS=${CFLAGS} -miphoneos-version-min=${MIN_SDK_VERSION} -arch x86_64 -isysroot ${IPHONESIMULATOR_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS} -arch x86_64 -isysroot ${IPHONESIMULATOR_SYSROOT}" LDFLAGS="-arch x86_64 -miphoneos-version-min=${MIN_SDK_VERSION} ${LDFLAGS}" "LIBS=${LIBS}"
+        ./configure --build=x86_64-apple-${DARWIN} --host=x86_64-apple-${DARWIN} --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/x86_64-sim "CC=${CC}" "CFLAGS=${CFLAGS} -mios-simulator-version-min=${MIN_SDK_VERSION} -arch x86_64 -isysroot ${IPHONESIMULATOR_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS} -arch x86_64 -isysroot ${IPHONESIMULATOR_SYSROOT}" LDFLAGS="-arch x86_64 -mios-simulator-version-min=${MIN_SDK_VERSION} ${LDFLAGS}" "LIBS=${LIBS}"
         make
         make install
+        unset IPHONEOS_DEPLOYMENT_TARGET
     )
 fi
 
@@ -281,11 +285,13 @@ echo "$(tput sgr0)"
 if [ "${BUILD_IOS_ARMV7}" == "YES" ]
 then
     (
+	    export IPHONEOS_DEPLOYMENT_TARGET="${MIN_SDK_VERSION}"    
         cd ${PROTOBUF_SRC_DIR}
         make distclean
         ./configure --build=x86_64-apple-${DARWIN} --host=armv7-apple-${DARWIN} --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/armv7-ios "CC=${CC}" "CFLAGS=${CFLAGS} -miphoneos-version-min=${MIN_SDK_VERSION} -arch armv7 -isysroot ${IPHONEOS_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS} -arch armv7 -isysroot ${IPHONEOS_SYSROOT}" LDFLAGS="-arch armv7 -miphoneos-version-min=${MIN_SDK_VERSION} ${LDFLAGS}" "LIBS=${LIBS}"
         make
         make install
+        unset IPHONEOS_DEPLOYMENT_TARGET
     )
 fi
 
@@ -298,11 +304,13 @@ echo "$(tput sgr0)"
 if [ "${BUILD_IOS_ARMV7S}" == "YES" ]
 then
     (
+	    export IPHONEOS_DEPLOYMENT_TARGET="${MIN_SDK_VERSION}"    
         cd ${PROTOBUF_SRC_DIR}
         make distclean
         ./configure --build=x86_64-apple-${DARWIN} --host=armv7s-apple-${DARWIN} --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/armv7s-ios "CC=${CC}" "CFLAGS=${CFLAGS} -miphoneos-version-min=${MIN_SDK_VERSION} -arch armv7s -isysroot ${IPHONEOS_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS} -arch armv7s -isysroot ${IPHONEOS_SYSROOT}" LDFLAGS="-arch armv7s -miphoneos-version-min=${MIN_SDK_VERSION} ${LDFLAGS}" "LIBS=${LIBS}"
         make
         make install
+        unset IPHONEOS_DEPLOYMENT_TARGET
     )
 fi
 
@@ -315,11 +323,13 @@ echo "$(tput sgr0)"
 if [ "${BUILD_IOS_ARM64}" == "YES" ]
 then
     (
+	    export IPHONEOS_DEPLOYMENT_TARGET="${MIN_SDK_VERSION}"    
         cd ${PROTOBUF_SRC_DIR}
         make distclean
         ./configure --build=x86_64-apple-${DARWIN} --host=arm --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/arm64-ios "CC=${CC}" "CFLAGS=${CFLAGS} -miphoneos-version-min=${MIN_SDK_VERSION} -arch arm64 -isysroot ${IPHONEOS_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS} -arch arm64 -isysroot ${IPHONEOS_SYSROOT}" LDFLAGS="-arch arm64 -miphoneos-version-min=${MIN_SDK_VERSION} ${LDFLAGS}" "LIBS=${LIBS}"
         make
         make install
+        unset IPHONEOS_DEPLOYMENT_TARGET
     )
 fi
 
@@ -332,11 +342,13 @@ echo "$(tput sgr0)"
 if [ "${BUILD_WATCHOS}" == "YES" ]
 then
     (
+	    export WATCHOS_DEPLOYMENT_TARGET="${MIN_WATCHOS_VERSION}"
         cd ${PROTOBUF_SRC_DIR}
         make distclean
         ./configure --build=x86_64-apple-${DARWIN} --host=armv7k-apple-${DARWIN} --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/armv7k-watchos "CC=${CC}" "CFLAGS=${CFLAGS} -mwatchos-version-min=${MIN_WATCHOS_VERSION} -arch armv7k -isysroot ${WATCHOS_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS} -arch armv7k -isysroot ${WATCHOS_SYSROOT}" LDFLAGS="-arch armv7k -mwatchos-version-min=${MIN_WATCHOS_VERSION} ${LDFLAGS}" "LIBS=${LIBS}"
         make
         make install
+        unset WATCHOS_DEPLOYMENT_TARGET
     )
 fi
 
@@ -349,11 +361,13 @@ echo "$(tput sgr0)"
 if [ "${BUILD_WATCHSIMULATOR}" == "YES" ]
 then
     (
+	    export WATCHOS_DEPLOYMENT_TARGET="${MIN_WATCHOS_VERSION}"
         cd ${PROTOBUF_SRC_DIR}
         make distclean
-        ./configure --build=x86_64-apple-${DARWIN} --host=i386-apple-${DARWIN} --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/watchos-sim "CC=${CC}" "CFLAGS=${CFLAGS} -mwatchos-version-min=${MIN_WATCHOS_VERSION} -arch i386 -isysroot ${WATCHSIMULATOR_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS} -arch i386 -isysroot ${WATCHSIMULATOR_SYSROOT}" LDFLAGS="-arch i386 -mwatchos-version-min=${MIN_WATCHOS_VERSION} ${LDFLAGS}" "LIBS=${LIBS}"
+        ./configure --build=x86_64-apple-${DARWIN} --host=i386-apple-${DARWIN} --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/watchos-sim "CC=${CC}" "CFLAGS=${CFLAGS} -mwatchos-simulator-version-min=${MIN_WATCHOS_VERSION} -arch i386 -isysroot ${WATCHSIMULATOR_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS} -arch i386 -isysroot ${WATCHSIMULATOR_SYSROOT}" LDFLAGS="-arch i386 -mwatchos-simulator-version-min=${MIN_WATCHOS_VERSION} ${LDFLAGS}" "LIBS=${LIBS}"
         make
         make install
+        unset WATCHOS_DEPLOYMENT_TARGET
     )
 fi
 
