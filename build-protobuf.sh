@@ -161,7 +161,7 @@ echo "$(tput sgr0)"
         
         tar xvf ${PROTOBUF_RELEASE_DIRNAME}.tar.gz
         mv "${PROTOBUF_RELEASE_DIRNAME}" "${PROTOBUF_SRC_DIR}"
-        patch < subprocess.patch
+        patch "${PROTOBUF_SRC_DIR}/src/google/protobuf/compiler/subprocess.cc" "./subprocess.patch"
     fi
 )
 
