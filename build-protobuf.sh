@@ -21,11 +21,14 @@ mkdir -p "${PREFIX}/platform"
 USE_GIT_MASTER=NO
 
 
-
 PROTOBUF_GIT_URL=https://github.com/google/protobuf.git
 PROTOBUF_GIT_DIRNAME=protobuf
 PROTOBUF_VERSION=3.6.1
-PROTOBUF_RELEASE_URL=https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOBUF_VERSION}/protobuf-all-${PROTOBUF_VERSION}.tar.gz
+
+#PROTOBUF_RELEASE_TYPE=all
+PROTOBUF_RELEASE_TYPE=cpp
+
+PROTOBUF_RELEASE_URL=https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOBUF_VERSION}/protobuf-${PROTOBUF_RELEASE_TYPE}-${PROTOBUF_VERSION}.tar.gz
 PROTOBUF_RELEASE_DIRNAME=protobuf-${PROTOBUF_VERSION}
 
 BUILD_MACOSX_X86_64=NO
@@ -134,7 +137,7 @@ echo "$(tput sgr0)"
 (
     if [ -d ${PROTOBUF_SRC_DIR} ]
     then
-        rm -rf ${PROTOBUF_SRC_DIR}
+      rm -rf ${PROTOBUF_SRC_DIR}    
     fi
 
     cd `dirname ${PROTOBUF_SRC_DIR}`
@@ -158,6 +161,7 @@ echo "$(tput sgr0)"
         
         tar xvf ${PROTOBUF_RELEASE_DIRNAME}.tar.gz
         mv "${PROTOBUF_RELEASE_DIRNAME}" "${PROTOBUF_SRC_DIR}"
+        patch < subprocess.patch
     fi
 )
 

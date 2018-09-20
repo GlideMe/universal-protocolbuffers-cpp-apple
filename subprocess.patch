@@ -1,0 +1,46 @@
+--- ./temp/src/google/protobuf/compiler/subprocess.cc	2018-09-20 13:21:57.000000000 +0300
++++ ./patch/subprocess_patched.cc	2018-09-20 13:13:09.000000000 +0300
+@@ -36,6 +36,12 @@
+ #include <cstring>
+ #include <iostream>
+ 
++#if ((defined(TARGET_OS_WATCH) && (TARGET_OS_WATCH == 1)))
++    #ifndef NO_EXECV_NO_FORK
++        #define NO_EXECV_NO_FORK
++    #endif
++#endif
++
+ #ifndef _WIN32
+ #include <errno.h>
+ #include <sys/select.h>
+@@ -311,7 +317,11 @@
+ 
+   char* argv[2] = { portable_strdup(program.c_str()), NULL };
+ 
++#ifndef NO_EXECV_NO_FORK
+   child_pid_ = fork();
++#else
++  child_pid_ = -1;
++#endif
+   if (child_pid_ == -1) {
+     GOOGLE_LOG(FATAL) << "fork: " << strerror(errno);
+   } else if (child_pid_ == 0) {
+@@ -326,10 +336,18 @@
+ 
+     switch (search_mode) {
+       case SEARCH_PATH:
++#ifndef NO_EXECV_NO_FORK
+         execvp(argv[0], argv);
++#else
++        GOOGLE_LOG(FATAL) << "execvp: Not supported on this platform";
++#endif
+         break;
+       case EXACT_NAME:
++#ifndef NO_EXECV_NO_FORK
+         execv(argv[0], argv);
++#else
++        GOOGLE_LOG(FATAL) << "execvp: Not supported on this platform";
++#endif
+         break;
+     }
+ 
