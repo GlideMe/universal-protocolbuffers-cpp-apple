@@ -53,7 +53,7 @@ MIN_SDK_VERSION=8.0
 
 MACOSX_PLATFORM=${XCODEDIR}/Platforms/MacOSX.platform
 MACOSX_SYSROOT=${MACOSX_PLATFORM}/Developer/SDKs/MacOSX.sdk
-MIN_MACOS_VERSION=12.0
+MIN_MACOS_VERSION=10.12
 
 IPHONEOS_PLATFORM=`xcrun --sdk iphoneos --show-sdk-platform-path`
 IPHONEOS_SYSROOT=`xcrun --sdk iphoneos --show-sdk-path`
@@ -227,6 +227,7 @@ then
         #make check
         make install
         unset MACOSX_DEPLOYMENT_TARGET
+        cp "config.log" "${PREFIX}/platform/x86_64-mac/"
     )
 fi
 
@@ -254,6 +255,7 @@ then
         make
         make install
         unset IPHONEOS_DEPLOYMENT_TARGET
+        cp "config.log" "${PREFIX}/platform/i386-sim/"
     )
 fi
 
@@ -273,6 +275,7 @@ then
         make
         make install
         unset IPHONEOS_DEPLOYMENT_TARGET
+        cp "config.log" "${PREFIX}/platform/i386-sim/"
     )
 fi
 
@@ -292,6 +295,7 @@ then
         make
         make install
         unset IPHONEOS_DEPLOYMENT_TARGET
+        cp "config.log" "${PREFIX}/platform/armv7-ios/"
     )
 fi
 
@@ -311,6 +315,7 @@ then
         make
         make install
         unset IPHONEOS_DEPLOYMENT_TARGET
+        cp "config.log" "${PREFIX}/platform/armv7s-ios/"
     )
 fi
 
@@ -330,6 +335,7 @@ then
         make
         make install
         unset IPHONEOS_DEPLOYMENT_TARGET
+        cp "config.log" "${PREFIX}/platform/arm64-ios/"
     )
 fi
 
@@ -349,6 +355,7 @@ then
         make
         make install
         unset WATCHOS_DEPLOYMENT_TARGET
+        cp "config.log" "${PREFIX}/platform/armv7k-watchos/"
     )
 fi
 
@@ -368,6 +375,7 @@ then
         make
         make install
         unset WATCHOS_DEPLOYMENT_TARGET
+        cp "config.log" "${PREFIX}/platform/watchos-sim/"
     )
 fi
 
