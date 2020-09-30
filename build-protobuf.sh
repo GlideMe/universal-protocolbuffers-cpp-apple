@@ -50,10 +50,10 @@ DARWIN=darwin`uname -r`
 
 XCODEDIR=`xcode-select --print-path`
 IOS_SDK_VERSION=`xcrun --sdk iphoneos --show-sdk-version`
-MIN_SDK_VERSION=8.0
+MIN_SDK_VERSION=13.0
 
-MACOSX_PLATFORM=${XCODEDIR}/Platforms/MacOSX.platform
-MACOSX_SYSROOT=${MACOSX_PLATFORM}/Developer/SDKs/MacOSX.sdk
+MACOSX_PLATFORM=`xcrun --sdk macosx --show-sdk-platform-path`
+MACOSX_SYSROOT=`xcrun --sdk macosx --show-sdk-path`
 MIN_MACOS_VERSION=10.12
 
 IPHONEOS_PLATFORM=`xcrun --sdk iphoneos --show-sdk-platform-path`
@@ -64,7 +64,7 @@ IPHONESIMULATOR_SYSROOT=`xcrun --sdk iphonesimulator --show-sdk-path`
 
 WATCHOS_PLATFORM=`xcrun --sdk watchos --show-sdk-platform-path`
 WATCHOS_SYSROOT=`xcrun --sdk watchos --show-sdk-path`
-MIN_WATCHOS_VERSION=4.0
+MIN_WATCHOS_VERSION=6.0
 
 WATCHSIMULATOR_PLATFORM=`xcrun --sdk watchsimulator --show-sdk-platform-path`
 WATCHSIMULATOR_SYSROOT=`xcrun --sdk watchsimulator --show-sdk-path`
@@ -72,17 +72,17 @@ WATCHSIMULATOR_SYSROOT=`xcrun --sdk watchsimulator --show-sdk-path`
 
 # Uncomment if you want to see more information about each invocation
 # of clang as the builds proceed.
-# CLANG_VERBOSE="--verbose"
-CC=clang
-CXX=clang
-#SILENCED_WARNINGS="-Wno-unused-local-typedef -Wno-unused-function"
-SILENCED_WARNINGS=""
+#CLANG_VERBOSE="--verbose"
+CC=`xcrun -find cc`
+CXX=`xcrun -find c++`
+SILENCED_WARNINGS="-Wno-unused-local-typedef -Wno-unused-function"
+#SILENCED_WARNINGS=""
 # NOTE: Google Protobuf does not currently build if you specify 'libstdc++'
 # instead of `libc++` here.
 STDLIB=libc++
 
-CFLAGS="${CLANG_VERBOSE} ${SILENCED_WARNINGS} -DNDEBUG -Os -pipe -fPIC -fcxx-exceptions  -fembed-bitcode" 
-CFLAGS_OSX="${CLANG_VERBOSE} ${SILENCED_WARNINGS} -DNDEBUG -Os -pipe -fPIC -fcxx-exceptions"
+CFLAGS="${CLANG_VERBOSE} ${SILENCED_WARNINGS} -DNDEBUG -g -Os -pipe -fPIC -fcxx-exceptions  -fembed-bitcode" 
+CFLAGS_OSX="${CLANG_VERBOSE} ${SILENCED_WARNINGS} -DNDEBUG -g -Os -pipe -fPIC -fcxx-exceptions"
 CXXFLAGS="${CLANG_VERBOSE} ${CFLAGS} -std=c++11 -stdlib=${STDLIB}"
 CXXFLAGS_OSX="${CLANG_VERBOSE} ${CFLAGS_OSX} -std=c++11 -stdlib=${STDLIB}"
 LDFLAGS="-stdlib=${STDLIB}"
@@ -225,13 +225,11 @@ then
     (
 	    export MACOSX_DEPLOYMENT_TARGET="${MIN_MACOS_VERSION}"
         cd ${PROTOBUF_SRC_DIR}
-        make distclean
-        CURRENT_PLATFORM=x86_64-mac
-        CURRENT_EXEC_PREFIX="${PREFIX}/platform/${CURRENT_PLATFORM}"
-        mkdir $CURRENT_EXEC_PREFIX
-        ./configure --disable-shared --prefix=${PREFIX} --exec-prefix=${CURRENT_EXEC_PREFIX} "CC=${CC}" "CFLAGS=${CFLAGS} -arch x86_64" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS} -arch x86_64" "LDFLAGS=${LDFLAGS}" "LIBS=${LIBS}"
-        cp "config.log" "${CURRENT_EXEC_PREFIX}/"
-        make -j 16 1> "${CURRENT_EXEC_PREFIX}/make.log" 2> "${CURRENT_EXEC_PREFIX}/make.err"
+        make distclean    
+        mkdir "${PREFIX}/platform/x86_64-mac/"        
+        ./configure --build=x86_64-apple-${DARWIN} --host=x86_64 --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/x86_64-mac "CC=${CC}" "CFLAGS=${CFLAGS_OSX} -arch x86_64 -isysroot ${MACOSX_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS_OSX} -arch x86_64 -isysroot ${MACOSX_SYSROOT}" LDFLAGS="-arch x86_64 ${LDFLAGS} -L${MACOSX_SYSROOT}/usr/lib/" "LIBS=${LIBS}"
+        cp "config.log" "${PREFIX}/platform/x86_64-mac/"
+        make -j 16 1> "${PREFIX}/platform/x86_64-mac/make.log" 2> "${PREFIX}/platform/x86_64-mac/make.err"
         #make check
         make install
         unset MACOSX_DEPLOYMENT_TARGET        
