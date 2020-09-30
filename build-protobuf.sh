@@ -42,7 +42,8 @@ BUILD_IOS_ARM64=YES
 
 BUILD_WATCHOS_ARMV7K=YES
 BUILD_WATCHOS_ARM64_32=YES
-BUILD_WATCHSIMULATOR=YES
+BUILD_I386_WATCHSIMULATOR=YES
+BUILD_X86_64_WATCHSIMULATOR=YES
 
 PROTOBUF_SRC_DIR=./temp
 
@@ -101,9 +102,10 @@ echo "BUILD_X86_64_IOSSIM ........ ${BUILD_X86_64_IOSSIM}"
 echo "BUILD_IOS_ARMV7 ............ ${BUILD_IOS_ARMV7}"
 echo "BUILD_IOS_ARMV7S ........... ${BUILD_IOS_ARMV7S}"
 echo "BUILD_IOS_ARM64 ............ ${BUILD_IOS_ARM64}"
-echo "BUILD_WATCHOS_ARMV7K ........${BUILD_WATCHOS_ARMV7K}"
-echo "BUILD_WATCHOS_ARM64_32 ......${BUILD_WATCHOS_ARM64_32}"
-echo "BUILD_WATCHSIMULATOR ....... ${BUILD_WATCHSIMULATOR}"
+echo "BUILD_WATCHOS_ARMV7K ....... ${BUILD_WATCHOS_ARMV7K}"
+echo "BUILD_WATCHOS_ARM64_32 ..... ${BUILD_WATCHOS_ARM64_32}"
+echo "BUILD_I386_WATCHSIMULATOR .. ${BUILD_I386_WATCHSIMULATOR}"
+echo "BUILD_X86_64_WATCHSIMULATOR  ${BUILD_X86_64_WATCHSIMULATOR}"
 echo "PROTOBUF_SRC_DIR ........... ${PROTOBUF_SRC_DIR}"
 echo "DARWIN ..................... ${DARWIN}"
 echo "XCODEDIR ................... ${XCODEDIR}"
@@ -401,15 +403,38 @@ echo "# i386 for Watch Simulator"
 echo "###########################"
 echo "$(tput sgr0)"
 
-if [ "${BUILD_WATCHSIMULATOR}" == "YES" ]
+if [ "${BUILD_I386_WATCHSIMULATOR}" == "YES" ]
 then
     (
 	    export WATCHOS_DEPLOYMENT_TARGET="${MIN_WATCHOS_VERSION}"
         cd ${PROTOBUF_SRC_DIR}
         make distclean
-        mkdir "${PREFIX}/platform/watchos-sim/"
-        ./configure --build=x86_64-apple-${DARWIN} --host=i386-apple-${DARWIN} --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/watchos-sim "CC=${CC}" "CFLAGS=${CFLAGS} -mwatchos-simulator-version-min=${MIN_WATCHOS_VERSION} -arch i386 -isysroot ${WATCHSIMULATOR_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS_OSX} -arch i386 -isysroot ${WATCHSIMULATOR_SYSROOT}" LDFLAGS="-arch i386 -mwatchos-simulator-version-min=${MIN_WATCHOS_VERSION} ${LDFLAGS} -L${WATCHSIMULATOR_SYSROOT}/usr/lib/" "LIBS=${LIBS}"
-        cp "config.log" "${PREFIX}/platform/watchos-sim/"
+        mkdir "${PREFIX}/platform/watchos-i386-sim/"
+        ./configure --build=x86_64-apple-${DARWIN} --host=i386-apple-${DARWIN} --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/watchos-i386-sim "CC=${CC}" "CFLAGS=${CFLAGS} -mwatchos-simulator-version-min=${MIN_WATCHOS_VERSION} -arch i386 -isysroot ${WATCHSIMULATOR_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS_OSX} -arch i386 -isysroot ${WATCHSIMULATOR_SYSROOT}" LDFLAGS="-arch i386 -mwatchos-simulator-version-min=${MIN_WATCHOS_VERSION} ${LDFLAGS} -L${WATCHSIMULATOR_SYSROOT}/usr/lib/" "LIBS=${LIBS}"
+        
+        cp "config.log" "${PREFIX}/platform/watchos-i386-sim/"
+        make -j 16
+        make install
+        unset WATCHOS_DEPLOYMENT_TARGET        
+    )
+fi
+
+echo "$(tput setaf 2)"
+echo "###########################"
+echo "# x86_64 for Watch Simulator"
+echo "###########################"
+echo "$(tput sgr0)"
+
+if [ "${BUILD_X86_64_WATCHSIMULATOR}" == "YES" ]
+then
+    (
+	    export WATCHOS_DEPLOYMENT_TARGET="${MIN_WATCHOS_VERSION}"
+        cd ${PROTOBUF_SRC_DIR}
+        make distclean
+        mkdir "${PREFIX}/platform/watchos-x86_64-sim/"
+        ./configure --build=x86_64-apple-${DARWIN} --host=x86_64 --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/watchos-x86_64-sim "CC=${CC}" "CFLAGS=${CFLAGS} -mwatchos-simulator-version-min=${MIN_WATCHOS_VERSION} -arch x86_64 -isysroot ${WATCHSIMULATOR_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS_OSX} -arch x86_64 -isysroot ${WATCHSIMULATOR_SYSROOT}" LDFLAGS="-arch x86_64 -mwatchos-simulator-version-min=${MIN_WATCHOS_VERSION} ${LDFLAGS} -L${WATCHSIMULATOR_SYSROOT}/usr/lib/" "LIBS=${LIBS}"
+        
+        cp "config.log" "${PREFIX}/platform/watchos-x86_64-sim/"
         make -j 16
         make install
         unset WATCHOS_DEPLOYMENT_TARGET        
