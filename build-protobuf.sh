@@ -257,9 +257,9 @@ then
 	    export MACOSX_DEPLOYMENT_TARGET="${MIN_MACOS_VERSION}"
         cd ${PROTOBUF_SRC_DIR}
         make distclean
-        mkdir "${PREFIX}/platform/i386-sim/"
-        ./configure --build=x86_64-apple-${DARWIN} --host=i386-apple-${DARWIN} --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/i386-sim "CC=${CC}" "CFLAGS=${CFLAGS_OSX} -mios-simulator-version-min=${MIN_SDK_VERSION} -arch i386 -isysroot ${IPHONESIMULATOR_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS_OSX} -mios-simulator-version-min=${MIN_SDK_VERSION} -arch i386 -isysroot ${IPHONESIMULATOR_SYSROOT}" LDFLAGS="-arch i386 -mios-simulator-version-min=${MIN_SDK_VERSION} ${LDFLAGS} -L${IPHONESIMULATOR_SYSROOT}/usr/lib/" "LIBS=${LIBS}"
-        cp "config.log" "${PREFIX}/platform/i386-sim/"
+        mkdir "${PREFIX}/platform/sim-i386-ios/"
+        ./configure --build=x86_64-apple-${DARWIN} --host=i386-apple-${DARWIN} --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/sim-i386-ios "CC=${CC}" "CFLAGS=${CFLAGS_OSX} -mios-simulator-version-min=${MIN_SDK_VERSION} -arch i386 -isysroot ${IPHONESIMULATOR_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS_OSX} -mios-simulator-version-min=${MIN_SDK_VERSION} -arch i386 -isysroot ${IPHONESIMULATOR_SYSROOT}" LDFLAGS="-arch i386 -mios-simulator-version-min=${MIN_SDK_VERSION} ${LDFLAGS} -L${IPHONESIMULATOR_SYSROOT}/usr/lib/" "LIBS=${LIBS}"
+        cp "config.log" "${PREFIX}/platform/sim-i386-ios/"
         make -j 16
         make install
         unset MACOSX_DEPLOYMENT_TARGET
@@ -280,9 +280,9 @@ then
 	    export MACOSX_DEPLOYMENT_TARGET="${MIN_MACOS_VERSION}"
         cd ${PROTOBUF_SRC_DIR}
         make distclean
-        mkdir "${PREFIX}/platform/x86_64-sim/"
-        ./configure --build=x86_64-apple-${DARWIN} --host=x86_64 --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/x86_64-sim "CC=${CC}" "CFLAGS=${CFLAGS_OSX} -mios-simulator-version-min=${MIN_SDK_VERSION} -arch x86_64 -isysroot ${IPHONESIMULATOR_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS_OSX} -mios-simulator-version-min=${MIN_SDK_VERSION} -arch x86_64 -isysroot ${IPHONESIMULATOR_SYSROOT}" LDFLAGS="-arch x86_64 -mios-simulator-version-min=${MIN_SDK_VERSION} ${LDFLAGS} -L${IPHONESIMULATOR_SYSROOT}/usr/lib/" "LIBS=${LIBS}"
-        cp "config.log" "${PREFIX}/platform/x86_64-sim/"        
+        mkdir "${PREFIX}/platform/sim-x86_64-ios/"
+        ./configure --build=x86_64-apple-${DARWIN} --host=x86_64 --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/sim-x86_64-ios "CC=${CC}" "CFLAGS=${CFLAGS_OSX} -mios-simulator-version-min=${MIN_SDK_VERSION} -arch x86_64 -isysroot ${IPHONESIMULATOR_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS_OSX} -mios-simulator-version-min=${MIN_SDK_VERSION} -arch x86_64 -isysroot ${IPHONESIMULATOR_SYSROOT}" LDFLAGS="-arch x86_64 -mios-simulator-version-min=${MIN_SDK_VERSION} ${LDFLAGS} -L${IPHONESIMULATOR_SYSROOT}/usr/lib/" "LIBS=${LIBS}"
+        cp "config.log" "${PREFIX}/platform/sim-x86_64-ios/"        
         make -j 16
         make install
         unset MACOSX_DEPLOYMENT_TARGET
@@ -396,23 +396,35 @@ then
 fi
 
 echo "$(tput setaf 2)"
-echo "###########################"
-echo "# i386 for Watch Simulator"
-echo "###########################"
+echo "##################################"
+echo "# i386, x86_64 for Watch Simulator"
+echo "##################################"
 echo "$(tput sgr0)"
 
 if [ "${BUILD_WATCHSIMULATOR}" == "YES" ]
 then
     (
+    	export WATCHOS_DEPLOYMENT_TARGET="${MIN_WATCHOS_VERSION}"
+        cd ${PROTOBUF_SRC_DIR}
+        make distclean
+        mkdir "${PREFIX}/platform/sim-x86_64-watchos/"
+        ./configure --build=x86_64-apple-${DARWIN} --host=x86_64 --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/sim-x86_64-watchos "CC=${CC}" "CFLAGS=${CFLAGS} -mwatchos-simulator-version-min=${MIN_WATCHOS_VERSION} -arch x86_64 -isysroot ${WATCHSIMULATOR_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS_OSX} -arch x86_64 -isysroot ${WATCHSIMULATOR_SYSROOT}" LDFLAGS="-arch x86_64 -mwatchos-simulator-version-min=${MIN_WATCHOS_VERSION} ${LDFLAGS} -L${WATCHSIMULATOR_SYSROOT}/usr/lib/" "LIBS=${LIBS}"
+        cp "config.log" "${PREFIX}/platform/sim-x86_64-watchos/"
+        make -j 16
+        make install
+        unset WATCHOS_DEPLOYMENT_TARGET 
+        
 	    export WATCHOS_DEPLOYMENT_TARGET="${MIN_WATCHOS_VERSION}"
         cd ${PROTOBUF_SRC_DIR}
         make distclean
-        mkdir "${PREFIX}/platform/watchos-sim/"
-        ./configure --build=x86_64-apple-${DARWIN} --host=i386-apple-${DARWIN} --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/watchos-sim "CC=${CC}" "CFLAGS=${CFLAGS} -mwatchos-simulator-version-min=${MIN_WATCHOS_VERSION} -arch i386 -isysroot ${WATCHSIMULATOR_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS_OSX} -arch i386 -isysroot ${WATCHSIMULATOR_SYSROOT}" LDFLAGS="-arch i386 -mwatchos-simulator-version-min=${MIN_WATCHOS_VERSION} ${LDFLAGS} -L${WATCHSIMULATOR_SYSROOT}/usr/lib/" "LIBS=${LIBS}"
-        cp "config.log" "${PREFIX}/platform/watchos-sim/"
+        mkdir "${PREFIX}/platform/sim-i386-watchos/"
+        ./configure --build=x86_64-apple-${DARWIN} --host=i386-apple-${DARWIN} --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/sim-i386-watchos "CC=${CC}" "CFLAGS=${CFLAGS} -mwatchos-simulator-version-min=${MIN_WATCHOS_VERSION} -arch i386 -isysroot ${WATCHSIMULATOR_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS_OSX} -arch i386 -isysroot ${WATCHSIMULATOR_SYSROOT}" LDFLAGS="-arch i386 -mwatchos-simulator-version-min=${MIN_WATCHOS_VERSION} ${LDFLAGS} -L${WATCHSIMULATOR_SYSROOT}/usr/lib/" "LIBS=${LIBS}"
+        cp "config.log" "${PREFIX}/platform/sim-i386-watchos/"
         make -j 16
         make install
-        unset WATCHOS_DEPLOYMENT_TARGET        
+        unset WATCHOS_DEPLOYMENT_TARGET
+        
+        
     )
 fi
 
@@ -423,23 +435,35 @@ echo "###################################################################"
 echo "$(tput sgr0)"
 (
 cd ${PREFIX}/platform
-mkdir universal
+mkdir watchos
+mkdir ios
 for i in `ls x86_64-mac/lib/*.a`
 do
 i=`basename $i`
-lipo -create *sim/lib/$i *watchos/lib/$i *ios/lib/$i -output universal/$i
+lipo -create *watchos/lib/$i -output watchos/$i
+lipo -create *ios/lib/$i -output ios/$i
 done
 )
 (
 cd ${PREFIX}
 mkdir bin
 mkdir lib
+mkdir lib/macos
+mkdir lib/watchos
+mkdir lib/ios
+
 cp -r platform/x86_64-mac/bin/protoc bin
-cp -r platform/x86_64-mac/lib/* lib
-cp -r platform/universal/* lib
+cp -r platform/x86_64-mac/lib/* lib/macos
+cp -r platform/watchos/* lib/watchos
+cp -r platform/ios/* lib/ios
+
 #rm -rf platform
-lipo -info lib/libprotobuf.a
-lipo -info lib/libprotobuf-lite.a
+lipo -info  lib/watchos/libprotobuf.a
+lipo -info  lib/watchos/libprotobuf-lite.a
+
+lipo -info  lib/ios/libprotobuf.a
+lipo -info  lib/ios/libprotobuf-lite.a
+
 )
 if [ "${USE_GIT_MASTER}" == "YES" ]
 then
