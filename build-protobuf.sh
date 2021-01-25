@@ -32,6 +32,7 @@ PROTOBUF_RELEASE_URL=https://github.com/protocolbuffers/protobuf/releases/downlo
 PROTOBUF_RELEASE_DIRNAME=protobuf-${PROTOBUF_VERSION}
 
 BUILD_MACOSX_X86_64=YES
+BUILD_MACOSX_ARM64=YES
 
 BUILD_I386_IOSSIM=NO
 BUILD_X86_64_IOSSIM=YES
@@ -96,6 +97,7 @@ echo "PROTOBUF_VERSION ........... ${PROTOBUF_VERSION}"
 echo "PROTOBUF_RELEASE_URL ....... ${PROTOBUF_RELEASE_URL}"
 echo "PROTOBUF_RELEASE_DIRNAME ... ${PROTOBUF_RELEASE_DIRNAME}"
 echo "BUILD_MACOSX_X86_64 ........ ${BUILD_MACOSX_X86_64}"
+echo "BUILD_MACOSX_ARM64 ......... ${BUILD_MACOSX_ARM64}"
 echo "BUILD_I386_IOSSIM .......... ${BUILD_I386_IOSSIM}"
 echo "BUILD_X86_64_IOSSIM ........ ${BUILD_X86_64_IOSSIM}"
 echo "BUILD_IOS_ARMV7 ............ ${BUILD_IOS_ARMV7}"
@@ -236,8 +238,29 @@ then
     )
 fi
 
-PROTOC=${PREFIX}/platform/x86_64-mac/bin/protoc
+echo "$(tput setaf 2)"
+echo "###################################################################"
+echo "# arm64 for Mac OS X"
+echo "###################################################################"
+echo "$(tput sgr0)"
 
+if [ "${BUILD_MACOSX_ARM64}" == "YES" ]
+then
+    (
+	    export MACOSX_DEPLOYMENT_TARGET="${MIN_MACOS_VERSION}"
+        cd ${PROTOBUF_SRC_DIR}
+        make distclean    
+        mkdir "${PREFIX}/platform/arm64-mac/"        
+        ./configure --build=x86_64-apple-${DARWIN} --host=arm --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/arm64-mac "CC=${CC}" "CFLAGS=${CFLAGS_OSX} -arch arm64 -isysroot ${MACOSX_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS_OSX} -arch arm64 -isysroot ${MACOSX_SYSROOT}" LDFLAGS="-arch arm64 ${LDFLAGS} -L${MACOSX_SYSROOT}/usr/lib/" "LIBS=${LIBS}"
+        cp "config.log" "${PREFIX}/platform/arm64-mac/"
+        make -j 16 1> "${PREFIX}/platform/arm64-mac/make.log" 2> "${PREFIX}/platform/arm64-mac/make.err"
+        #make check
+        make install
+        unset MACOSX_DEPLOYMENT_TARGET        
+    )
+fi
+
+PROTOC=${PREFIX}/platform/x86_64-mac/bin/protoc
 
 ###################################################################
 # This section contains the build commands for each of the 
@@ -437,23 +460,26 @@ echo "$(tput sgr0)"
 cd ${PREFIX}/platform
 mkdir watchos
 mkdir ios
+mkdir macos
 for i in `ls x86_64-mac/lib/*.a`
 do
 i=`basename $i`
 lipo -create *watchos/lib/$i -output watchos/$i
 lipo -create *ios/lib/$i -output ios/$i
+lipo -create *mac/lib/$i -output macos/$i
 done
 )
 (
 cd ${PREFIX}
 mkdir bin
 mkdir lib
-mkdir lib/macos
+mkdir -p lib/macos
 mkdir lib/watchos
 mkdir lib/ios
 
-cp -r platform/x86_64-mac/bin/protoc bin
-cp -r platform/x86_64-mac/lib/* lib/macos
+cp -r platform/x86_64-mac/bin/protoc bin/protoc_x86-64
+cp -r platform/arm64-mac/bin/protoc bin/protoc_arm64
+cp -r platform/macos/* lib/macos
 cp -r platform/watchos/* lib/watchos
 cp -r platform/ios/* lib/ios
 
@@ -463,6 +489,9 @@ lipo -info  lib/watchos/libprotobuf-lite.a
 
 lipo -info  lib/ios/libprotobuf.a
 lipo -info  lib/ios/libprotobuf-lite.a
+
+lipo -info  lib/macos/libprotobuf.a
+lipo -info  lib/macos/libprotobuf-lite.a
 
 )
 if [ "${USE_GIT_MASTER}" == "YES" ]

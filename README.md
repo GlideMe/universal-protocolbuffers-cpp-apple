@@ -6,6 +6,7 @@ Adapted from [https://github.com/sheldonth/arm64-protocolbuffers-cpp]() which wa
 Build the runtime Google Protobuf Buffers v3.6.1 C++ libraries (libprotoc.a, libprotobuf.a, libprotobuf-lite.a) for:
 
 * macOS (x86_64)
+* macOS (arm64)
 * iOS Device (arm64) 
 * iOS Simulator (x86_64)
 * WatchOS device (armv7k)
