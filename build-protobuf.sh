@@ -446,8 +446,16 @@ then
         make -j 16
         make install
         unset WATCHOS_DEPLOYMENT_TARGET
-        
-        
+
+        export WATCHOS_DEPLOYMENT_TARGET="${MIN_WATCHOS_VERSION}"
+        cd ${PROTOBUF_SRC_DIR}
+        make distclean
+        mkdir "${PREFIX}/platform/sim-arm64-watchos/"
+        ./configure --build=x86_64-apple-${DARWIN} --host=arm --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/sim-arm64-watchos "CC=${CC}" "CFLAGS=${CFLAGS} -mwatchos-simulator-version-min=${MIN_WATCHOS_VERSION} -arch arm64 -isysroot ${WATCHSIMULATOR_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS_OSX} -arch arm64 -isysroot ${WATCHSIMULATOR_SYSROOT}" LDFLAGS="-arch arm64 -mwatchos-simulator-version-min=${MIN_WATCHOS_VERSION} ${LDFLAGS} -L${WATCHSIMULATOR_SYSROOT}/usr/lib/" "LIBS=${LIBS}"
+        cp "config.log" "${PREFIX}/platform/sim-arm64-watchos/"
+        make -j 16
+        make install
+        unset WATCHOS_DEPLOYMENT_TARGET
     )
 fi
 
