@@ -9,12 +9,14 @@ Build the runtime Google Protobuf Buffers v3.6.1 C++ libraries (libprotoc.a, lib
 * macOS (arm64)
 * iOS Device (arm64) 
 * iOS Simulator (x86_64)
+* iOS Simulator (arm64)
 * WatchOS device (armv7k)
 * WatchOS device (arm64_32)
 * WatchOS simulator (i386)
 * WatchOS simulator (x86_64)
 * WatchOS simulator (arm64)
-* iOS Fat Mach-O
+* iOS Simulator Fat Mach-O
+* iOS arm64 Mach-O
 * WatchOS Fat Mach-O
 
 Just clone this repo and run `./build-protofbuf.sh`

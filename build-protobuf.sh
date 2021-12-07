@@ -36,6 +36,7 @@ BUILD_MACOSX_ARM64=YES
 
 BUILD_I386_IOSSIM=NO
 BUILD_X86_64_IOSSIM=YES
+BUILD_ARM64_IOSSIM=YES
 
 BUILD_IOS_ARMV7=NO
 BUILD_IOS_ARMV7S=NO
@@ -100,6 +101,7 @@ echo "BUILD_MACOSX_X86_64 ........ ${BUILD_MACOSX_X86_64}"
 echo "BUILD_MACOSX_ARM64 ......... ${BUILD_MACOSX_ARM64}"
 echo "BUILD_I386_IOSSIM .......... ${BUILD_I386_IOSSIM}"
 echo "BUILD_X86_64_IOSSIM ........ ${BUILD_X86_64_IOSSIM}"
+echo "BUILD_ARM64_IOSSIM ......... ${BUILD_ARM64_IOSSIM}"
 echo "BUILD_IOS_ARMV7 ............ ${BUILD_IOS_ARMV7}"
 echo "BUILD_IOS_ARMV7S ........... ${BUILD_IOS_ARMV7S}"
 echo "BUILD_IOS_ARM64 ............ ${BUILD_IOS_ARM64}"
@@ -280,9 +282,9 @@ then
 	    export MACOSX_DEPLOYMENT_TARGET="${MIN_MACOS_VERSION}"
         cd ${PROTOBUF_SRC_DIR}
         make distclean
-        mkdir "${PREFIX}/platform/sim-i386-ios/"
-        ./configure --build=x86_64-apple-${DARWIN} --host=i386-apple-${DARWIN} --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/sim-i386-ios "CC=${CC}" "CFLAGS=${CFLAGS_OSX} -mios-simulator-version-min=${MIN_SDK_VERSION} -arch i386 -isysroot ${IPHONESIMULATOR_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS_OSX} -mios-simulator-version-min=${MIN_SDK_VERSION} -arch i386 -isysroot ${IPHONESIMULATOR_SYSROOT}" LDFLAGS="-arch i386 -mios-simulator-version-min=${MIN_SDK_VERSION} ${LDFLAGS} -L${IPHONESIMULATOR_SYSROOT}/usr/lib/" "LIBS=${LIBS}"
-        cp "config.log" "${PREFIX}/platform/sim-i386-ios/"
+        mkdir "${PREFIX}/platform/sim-ios-i386/"
+        ./configure --build=x86_64-apple-${DARWIN} --host=i386-apple-${DARWIN} --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/sim-ios-i386 "CC=${CC}" "CFLAGS=${CFLAGS_OSX} -mios-simulator-version-min=${MIN_SDK_VERSION} -arch i386 -isysroot ${IPHONESIMULATOR_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS_OSX} -mios-simulator-version-min=${MIN_SDK_VERSION} -arch i386 -isysroot ${IPHONESIMULATOR_SYSROOT}" LDFLAGS="-arch i386 -mios-simulator-version-min=${MIN_SDK_VERSION} ${LDFLAGS} -L${IPHONESIMULATOR_SYSROOT}/usr/lib/" "LIBS=${LIBS}"
+        cp "config.log" "${PREFIX}/platform/sim-ios-i386/"
         make -j 16
         make install
         unset MACOSX_DEPLOYMENT_TARGET
@@ -303,9 +305,32 @@ then
 	    export MACOSX_DEPLOYMENT_TARGET="${MIN_MACOS_VERSION}"
         cd ${PROTOBUF_SRC_DIR}
         make distclean
-        mkdir "${PREFIX}/platform/sim-x86_64-ios/"
-        ./configure --build=x86_64-apple-${DARWIN} --host=x86_64 --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/sim-x86_64-ios "CC=${CC}" "CFLAGS=${CFLAGS_OSX} -mios-simulator-version-min=${MIN_SDK_VERSION} -arch x86_64 -isysroot ${IPHONESIMULATOR_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS_OSX} -mios-simulator-version-min=${MIN_SDK_VERSION} -arch x86_64 -isysroot ${IPHONESIMULATOR_SYSROOT}" LDFLAGS="-arch x86_64 -mios-simulator-version-min=${MIN_SDK_VERSION} ${LDFLAGS} -L${IPHONESIMULATOR_SYSROOT}/usr/lib/" "LIBS=${LIBS}"
-        cp "config.log" "${PREFIX}/platform/sim-x86_64-ios/"        
+        mkdir "${PREFIX}/platform/sim-ios-x86_64/"
+        ./configure --build=x86_64-apple-${DARWIN} --host=x86_64 --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/sim-ios-x86_64 "CC=${CC}" "CFLAGS=${CFLAGS_OSX} -mios-simulator-version-min=${MIN_SDK_VERSION} -arch x86_64 -isysroot ${IPHONESIMULATOR_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS_OSX} -mios-simulator-version-min=${MIN_SDK_VERSION} -arch x86_64 -isysroot ${IPHONESIMULATOR_SYSROOT}" LDFLAGS="-arch x86_64 -mios-simulator-version-min=${MIN_SDK_VERSION} ${LDFLAGS} -L${IPHONESIMULATOR_SYSROOT}/usr/lib/" "LIBS=${LIBS}"
+        cp "config.log" "${PREFIX}/platform/sim-ios-x86_64/"        
+        make -j 16
+        make install
+        unset MACOSX_DEPLOYMENT_TARGET
+        unset IPHONEOS_DEPLOYMENT_TARGET
+    )
+fi
+
+echo "$(tput setaf 2)"
+echo "#############################"
+echo "# arm64 for iPhone Simulator"
+echo "#############################"
+echo "$(tput sgr0)"
+
+if [ "${BUILD_ARM64_IOSSIM}" == "YES" ]
+then
+    (
+	    export IPHONEOS_DEPLOYMENT_TARGET="${MIN_SDK_VERSION}"
+	    export MACOSX_DEPLOYMENT_TARGET="${MIN_MACOS_VERSION}"
+        cd ${PROTOBUF_SRC_DIR}
+        make distclean
+        mkdir "${PREFIX}/platform/sim-ios-arm64/"
+        ./configure --build=x86_64-apple-${DARWIN} --host=arm --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/sim-ios-arm64 "CC=${CC}" "CFLAGS=${CFLAGS_OSX} -mios-simulator-version-min=${MIN_SDK_VERSION} -arch arm64 -isysroot ${IPHONESIMULATOR_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS_OSX} -mios-simulator-version-min=${MIN_SDK_VERSION} -arch arm64 -isysroot ${IPHONESIMULATOR_SYSROOT}" LDFLAGS="-arch arm64 -mios-simulator-version-min=${MIN_SDK_VERSION} ${LDFLAGS} -L${IPHONESIMULATOR_SYSROOT}/usr/lib/" "LIBS=${LIBS}"
+        cp "config.log" "${PREFIX}/platform/sim-ios-arm64/"        
         make -j 16
         make install
         unset MACOSX_DEPLOYMENT_TARGET
@@ -325,12 +350,12 @@ then
 	    export IPHONEOS_DEPLOYMENT_TARGET="${MIN_SDK_VERSION}"    
         cd ${PROTOBUF_SRC_DIR}
         make distclean
-        mkdir "${PREFIX}/platform/armv7-ios/"
-        ./configure --build=x86_64-apple-${DARWIN} --host=armv7-apple-${DARWIN} --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/armv7-ios "CC=${CC}" "CFLAGS=${CFLAGS} -miphoneos-version-min=${MIN_SDK_VERSION} -arch armv7 -isysroot ${IPHONEOS_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS} -arch armv7 -isysroot ${IPHONEOS_SYSROOT}" LDFLAGS="-arch armv7 -miphoneos-version-min=${MIN_SDK_VERSION} ${LDFLAGS}" "LIBS=${LIBS}"
+        mkdir "${PREFIX}/platform/device-ios-armv7/"
+        ./configure --build=x86_64-apple-${DARWIN} --host=armv7-apple-${DARWIN} --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/device-ios-armv7 "CC=${CC}" "CFLAGS=${CFLAGS} -miphoneos-version-min=${MIN_SDK_VERSION} -arch armv7 -isysroot ${IPHONEOS_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS} -arch armv7 -isysroot ${IPHONEOS_SYSROOT}" LDFLAGS="-arch armv7 -miphoneos-version-min=${MIN_SDK_VERSION} ${LDFLAGS}" "LIBS=${LIBS}"
         make -j 16
         make install
         unset IPHONEOS_DEPLOYMENT_TARGET
-        cp "config.log" "${PREFIX}/platform/armv7-ios/"
+        cp "config.log" "${PREFIX}/platform/device-ios-armv7/"
     )
 fi
 
@@ -346,12 +371,12 @@ then
 	    export IPHONEOS_DEPLOYMENT_TARGET="${MIN_SDK_VERSION}"    
         cd ${PROTOBUF_SRC_DIR}
         make distclean
-        mkdir "${PREFIX}/platform/armv7s-ios/"
-        ./configure --build=x86_64-apple-${DARWIN} --host=armv7s-apple-${DARWIN} --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/armv7s-ios "CC=${CC}" "CFLAGS=${CFLAGS} -miphoneos-version-min=${MIN_SDK_VERSION} -arch armv7s -isysroot ${IPHONEOS_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS} -arch armv7s -isysroot ${IPHONEOS_SYSROOT}" LDFLAGS="-arch armv7s -miphoneos-version-min=${MIN_SDK_VERSION} ${LDFLAGS}" "LIBS=${LIBS}"
+        mkdir "${PREFIX}/platform/device-ios-armv7s/"
+        ./configure --build=x86_64-apple-${DARWIN} --host=armv7s-apple-${DARWIN} --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/device-ios-armv7s "CC=${CC}" "CFLAGS=${CFLAGS} -miphoneos-version-min=${MIN_SDK_VERSION} -arch armv7s -isysroot ${IPHONEOS_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS} -arch armv7s -isysroot ${IPHONEOS_SYSROOT}" LDFLAGS="-arch armv7s -miphoneos-version-min=${MIN_SDK_VERSION} ${LDFLAGS}" "LIBS=${LIBS}"
         make -j 16
         make install
         unset IPHONEOS_DEPLOYMENT_TARGET
-        cp "config.log" "${PREFIX}/platform/armv7s-ios/"
+        cp "config.log" "${PREFIX}/platform/device-ios-armv7s/"
     )
 fi
 
@@ -367,9 +392,9 @@ then
 	    export IPHONEOS_DEPLOYMENT_TARGET="${MIN_SDK_VERSION}"    
         cd ${PROTOBUF_SRC_DIR}
         make distclean
-        mkdir "${PREFIX}/platform/arm64-ios/"
-        ./configure --build=x86_64-apple-${DARWIN} --host=arm --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/arm64-ios "CC=${CC}" "CFLAGS=${CFLAGS} -miphoneos-version-min=${MIN_SDK_VERSION} -arch arm64 -isysroot ${IPHONEOS_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS} -arch arm64 -isysroot ${IPHONEOS_SYSROOT}" LDFLAGS="-arch arm64 -miphoneos-version-min=${MIN_SDK_VERSION} ${LDFLAGS}" "LIBS=${LIBS}"
-        cp "config.log" "${PREFIX}/platform/arm64-ios/"
+        mkdir "${PREFIX}/platform/device-ios-arm64/"
+        ./configure --build=x86_64-apple-${DARWIN} --host=arm --with-protoc=${PROTOC} --disable-shared --prefix=${PREFIX} --exec-prefix=${PREFIX}/platform/device-ios-arm64 "CC=${CC}" "CFLAGS=${CFLAGS} -miphoneos-version-min=${MIN_SDK_VERSION} -arch arm64 -isysroot ${IPHONEOS_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS} -arch arm64 -isysroot ${IPHONEOS_SYSROOT}" LDFLAGS="-arch arm64 -miphoneos-version-min=${MIN_SDK_VERSION} ${LDFLAGS}" "LIBS=${LIBS}"
+        cp "config.log" "${PREFIX}/platform/device-ios-arm64/"
         make -j 16
         make install
         unset IPHONEOS_DEPLOYMENT_TARGET        
@@ -467,13 +492,15 @@ echo "$(tput sgr0)"
 (
 cd ${PREFIX}/platform
 mkdir watchos
-mkdir ios
+mkdir device-ios
+mkdir sim-ios
 mkdir macos
 for i in `ls x86_64-mac/lib/*.a`
 do
 i=`basename $i`
 lipo -create *watchos/lib/$i -output watchos/$i
-lipo -create *ios/lib/$i -output ios/$i
+lipo -create device-ios*/lib/$i -output device-ios/$i
+lipo -create sim-ios*/lib/$i -output sim-ios/$i
 lipo -create *mac/lib/$i -output macos/$i
 done
 )
@@ -483,20 +510,25 @@ mkdir bin
 mkdir lib
 mkdir -p lib/macos
 mkdir lib/watchos
-mkdir lib/ios
+mkdir lib/device-ios
+mkdir lib/sim-ios
 
 cp -r platform/x86_64-mac/bin/protoc bin/protoc_x86-64
 cp -r platform/arm64-mac/bin/protoc bin/protoc_arm64
 cp -r platform/macos/* lib/macos
 cp -r platform/watchos/* lib/watchos
-cp -r platform/ios/* lib/ios
+cp -r platform/sim-ios/* lib/sim-ios
+cp -r platform/device-ios/* lib/device-ios
 
 #rm -rf platform
 lipo -info  lib/watchos/libprotobuf.a
 lipo -info  lib/watchos/libprotobuf-lite.a
 
-lipo -info  lib/ios/libprotobuf.a
-lipo -info  lib/ios/libprotobuf-lite.a
+lipo -info  lib/sim-ios/libprotobuf.a
+lipo -info  lib/sim-ios/libprotobuf-lite.a
+
+lipo -info  lib/device-ios/libprotobuf.a
+lipo -info  lib/device-ios/libprotobuf-lite.a
 
 lipo -info  lib/macos/libprotobuf.a
 lipo -info  lib/macos/libprotobuf-lite.a
