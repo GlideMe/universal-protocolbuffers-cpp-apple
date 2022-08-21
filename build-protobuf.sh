@@ -87,7 +87,7 @@ SILENCED_WARNINGS="-Wno-unused-local-typedef -Wno-unused-function"
 # instead of `libc++` here.
 STDLIB=libc++
 
-CFLAGS="${CLANG_VERBOSE} ${SILENCED_WARNINGS} -DNDEBUG -g -Os -pipe -fPIC -fcxx-exceptions  -fembed-bitcode" 
+CFLAGS="${CLANG_VERBOSE} ${SILENCED_WARNINGS} -DNDEBUG -g -Os -pipe -fPIC -fcxx-exceptions" 
 CFLAGS_OSX="${CLANG_VERBOSE} ${SILENCED_WARNINGS} -DNDEBUG -g -Os -pipe -fPIC -fcxx-exceptions"
 CXXFLAGS="${CLANG_VERBOSE} ${CFLAGS} -std=c++11 -stdlib=${STDLIB}"
 CXXFLAGS_OSX="${CLANG_VERBOSE} ${CFLAGS_OSX} -std=c++11 -stdlib=${STDLIB}"
